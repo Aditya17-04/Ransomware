@@ -1,0 +1,149 @@
+##############################################################################
+# AI-Driven Ransomware & Intrusion Detection System — Master Configuration
+##############################################################################
+
+system:
+  name: "AI-RIDS"
+  version: "1.0.0"
+  log_level: "INFO"           # DEBUG | INFO | WARNING | ERROR | CRITICAL
+  log_dir: "logs"
+  model_dir: "models/saved"
+  data_dir: "data"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Telemetry Layer
+# ─────────────────────────────────────────────────────────────────────────────
+telemetry:
+  window_seconds: 5           # Sliding-window aggregation interval
+
+  hpc:
+    enabled: true
+    poll_interval_ms: 500     # How often to sample hardware counters
+    counters:                 # Windows PDH counter paths
+      - "\\Processor(_Total)\\% Processor Time"
+      - "\\Processor(_Total)\\% Privileged Time"
+      - "\\Processor(_Total)\\Interrupts/sec"
+      - "\\Memory\\Cache Faults/sec"
+      - "\\Memory\\Page Faults/sec"
+      - "\\Memory\\Pages/sec"
+      - "\\System\\Context Switches/sec"
+      - "\\System\\System Calls/sec"
+
+  file:
+    enabled: true
+    watch_paths:
+      - "C:\\Users"
+      - "C:\\Documents"
+    entropy_threshold: 7.2    # Shannon entropy ≥ this → suspicious (max 8.0)
+    high_freq_threshold: 20   # File-events/window to flag as suspicious
+    mass_delete_threshold: 10 # Deletions/window to flag
+    suspicious_extensions:    # Extensions typically used by ransomware
+      - ".enc"
+      - ".locked"
+      - ".crypto"
+      - ".crypt"
+      - ".crypted"
+      - ".encrypted"
+      - ".ransomed"
+      - ".wnry"
+      - ".wcry"
+      - ".zepto"
+      - ".locky"
+
+  network:
+    enabled: true
+    interface: null           # null = auto-select default interface
+    bpf_filter: "tcp or udp"
+    beacon_interval_min: 30   # Seconds; repeated connections at this cadence
+    beacon_interval_max: 300
+    exfil_bytes_threshold: 5000000    # 5 MB outbound in one window
+    c2_port_blacklist:
+      - 4444
+      - 1337
+      - 31337
+      - 6666
+      - 8080
+      - 9999
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Feature Engineering
+# ─────────────────────────────────────────────────────────────────────────────
+features:
+  normalize: true
+  scaler: "standard"          # standard | minmax | robust
+  # Feature vector layout (indices):
+  # [0-7]   HPC features   (8 dims)
+  # [8-14]  File features  (7 dims)
+  # [15-22] Network features (8 dims)
+  # Total: 23 features
+  vector_size: 23
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AI Detection Model
+# ─────────────────────────────────────────────────────────────────────────────
+model:
+  algorithm: "lightgbm"       # lightgbm | random_forest
+  classes:
+    - "Benign"
+    - "Suspicious"
+    - "Malicious"
+  # LightGBM hyper-parameters
+  lightgbm:
+    num_leaves: 63
+    max_depth: -1
+    n_estimators: 300
+    learning_rate: 0.05
+    min_child_samples: 20
+    colsample_bytree: 0.8
+    subsample: 0.8
+    reg_alpha: 0.1
+    reg_lambda: 0.1
+    class_weight: "balanced"
+    n_jobs: -1
+    random_state: 42
+  # Random Forest hyper-parameters
+  random_forest:
+    n_estimators: 300
+    max_depth: 20
+    min_samples_split: 5
+    min_samples_leaf: 2
+    class_weight: "balanced"
+    n_jobs: -1
+    random_state: 42
+  training:
+    test_size: 0.2
+    cross_val_folds: 5
+    synthetic_samples: 10000  # Used when no real dataset is provided
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Decision Engine
+# ─────────────────────────────────────────────────────────────────────────────
+decision:
+  thresholds:
+    suspicious: 0.60          # Confidence ≥ this → Suspicious alert
+    high_alert: 0.85          # Confidence ≥ this → High Alert + auto-response
+  cooldown_seconds: 30        # Minimum seconds between repeated alerts for same PID
+  dry_run: false              # true = log actions but don't execute them
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Response Actions
+# ─────────────────────────────────────────────────────────────────────────────
+response:
+  kill_process:
+    enabled: true
+    force: true               # taskkill /F
+
+  network_isolation:
+    enabled: true
+    # netsh or Windows Firewall rule creation
+    rule_prefix: "AI-RIDS-BLOCK"
+    auto_remove_after_seconds: 3600   # 0 = permanent
+
+  file_protection:
+    enabled: true
+    protected_dirs:
+      - "C:\\Users\\Default\\Documents"
+      - "C:\\ProgramData"
+      - "C:\\Windows\\System32"
+    vss_backup: true          # Trigger Volume Shadow Copy
+    revoke_write_on_alert: true
