@@ -185,14 +185,20 @@ export default function AuthPage({ onAuth, initialMode = 'signin' }) {
   const handleReset = async e => {
     e.preventDefault()
     setError('')
+    // Prevent double-submit: if info is already set the update already succeeded
+    if (info) return
     if (fields.password.length < 6)              { setError('Password must be at least 6 characters.'); return }
     if (fields.password !== fields.password2)    { setError('Passwords do not match.');                 return }
     setLoading(true)
     try {
       const { error: sbErr } = await supabase.auth.updateUser({ password: fields.password })
       if (sbErr) throw sbErr
-      setInfo('✅ Password updated! You can now sign in with your new password.')
-      setTimeout(() => switchMode('signin'), 2000)
+      setError('')
+      setInfo('✅ Password updated! Redirecting to sign in...')
+      // Sign out after a short delay so the user sees the confirmation, then
+      // the SIGNED_OUT event in App.jsx resets recovering=false and user=null,
+      // which remounts AuthPage in sign-in mode.
+      setTimeout(() => supabase.auth.signOut(), 1500)
     } catch (err) {
       setError(err.message || 'Failed to update password.')
     } finally {
@@ -239,7 +245,12 @@ export default function AuthPage({ onAuth, initialMode = 'signin' }) {
         onAuth({ email: u.email, name: u.user_metadata?.full_name || u.email.split('@')[0] })
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please try again.')
+      const msg = err.message || ''
+      if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('too many')) {
+        setError('Too many sign-up attempts. Please wait a few minutes and try again, or sign in if you already have an account.')
+      } else {
+        setError(msg || 'Authentication failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -393,7 +404,7 @@ export default function AuthPage({ onAuth, initialMode = 'signin' }) {
               </div>
               {error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>}
               {info  && <p className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">{info}</p>}
-              <button type="submit" disabled={loading}
+              <button type="submit" disabled={loading || !!info}
                 className="w-full py-3 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
                 style={{ background: 'linear-gradient(135deg,#5b5cf6,#4f46e5)', boxShadow: '0 4px 20px rgba(79,70,229,0.45)' }}>
                 {loading

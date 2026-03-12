@@ -32,23 +32,47 @@ export default function App() {
   const [activeTab,    setActiveTab]    = useState('dashboard')
 
   useEffect(() => {
-    // Restore session on page load (also handles OAuth redirect hash)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setUser(makeUser(session.user))
-      setAuthChecked(true)
-    })
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const searchParams = new URLSearchParams(window.location.search)
+    const isRecoveryLink =
+      hashParams.get('type') === 'recovery'
+      || searchParams.get('type') === 'recovery'
 
+    // Register listener FIRST — Supabase replays INITIAL_SESSION and any
+    // pending events (PASSWORD_RECOVERY, SIGNED_IN) to late-registered listeners.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'INITIAL_SESSION' && isRecoveryLink)) {
         // User arrived via password-reset link — show set-new-password form
         setRecovering(true)
         setUser(null)
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null)
+        setRecovering(false)
+      } else if (event === 'USER_UPDATED') {
+        // Fired by updateUser() during password reset; don't auto-login here —
+        // handleReset calls signOut() which will land them on the sign-in page.
       } else if (session) {
         setUser(makeUser(session.user))
         setRecovering(false)
       } else {
         setUser(null)
+        setRecovering(false)
       }
+    })
+
+    // Call getSession() AFTER registering the listener. This triggers the PKCE
+    // code exchange when Supabase redirects back from Google OAuth (?code=...).
+    // Some flows do not emit a later SIGNED_IN event reliably enough for this UI,
+    // so hydrate the user directly from the resolved session here.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (isRecoveryLink) {
+        setRecovering(true)
+        setUser(null)
+      } else if (session) {
+        setUser(makeUser(session.user))
+        setRecovering(false)
+      }
+      setAuthChecked(true)
     })
 
     return () => subscription.unsubscribe()
@@ -71,6 +95,7 @@ export default function App() {
   if (!user) {
     return (
       <AuthPage
+        key={recovering ? 'reset' : 'signin'}
         onAuth={u => setUser(u)}
         initialMode={recovering ? 'reset' : 'signin'}
       />
