@@ -1,4 +1,4 @@
-import { usePolling } from '../hooks/usePolling'
+﻿import { usePolling } from '../hooks/usePolling'
 import { getModel }   from '../api/client'
 import { BrainCircuit, Sliders, Layers, Database, BarChart2 } from 'lucide-react'
 
@@ -45,7 +45,7 @@ function ThresholdBar({ label, value, color }) {
           {(value * 100).toFixed(0)}%
         </span>
       </div>
-      <div className="h-3 bg-surface-700 rounded-full overflow-hidden">
+      <div className="h-3 bg-navy-700 rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${value * 100}%`, background: color }}
@@ -60,7 +60,7 @@ function ParamTable({ params }) {
     <table className="w-full text-xs">
       <tbody>
         {Object.entries(params ?? {}).map(([k, v]) => (
-          <tr key={k} className="border-b border-surface-700">
+          <tr key={k} className="border-b border-white/[0.06]">
             <td className="py-1.5 pr-4 text-slate-400 font-mono">{k}</td>
             <td className="py-1.5 text-slate-200 font-mono text-right">{String(v)}</td>
           </tr>
@@ -76,7 +76,7 @@ export default function ModelInfo() {
   if (loading) {
     return (
       <div className="text-center py-20 text-slate-500">
-        <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         Loading model metadata…
       </div>
     )
@@ -95,19 +95,19 @@ export default function ModelInfo() {
 
       {/* Header cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-900 border border-cyan-500/30 rounded-xl p-4">
+        <div className="glass border border-brand-500/30 rounded-xl p-4">
           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Algorithm</p>
-          <p className="text-lg font-bold text-cyan-400 capitalize">{algo.replace('_', ' ')}</p>
+          <p className="text-lg font-bold text-brand-400 capitalize">{algo.replace('_', ' ')}</p>
         </div>
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Feature Vector</p>
           <p className="text-lg font-bold text-white">{featCount} <span className="text-sm font-normal text-slate-400">dims</span></p>
         </div>
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Output Classes</p>
           <p className="text-lg font-bold text-white">{classes.length}</p>
         </div>
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Alert Cooldown</p>
           <p className="text-lg font-bold text-white">{cooldown} <span className="text-sm font-normal text-slate-400">sec</span></p>
         </div>
@@ -116,9 +116,9 @@ export default function ModelInfo() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* Decision thresholds */}
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-5 space-y-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2 mb-1">
-            <Sliders className="w-4 h-4 text-cyan-400" />
+            <Sliders className="w-4 h-4 text-brand-400" />
             <span className="text-sm font-semibold text-slate-300">Decision Thresholds</span>
           </div>
           <ThresholdBar label="Suspicious Threshold"  value={thresholds.suspicious ?? 0.60} color="#f59e0b" />
@@ -141,12 +141,12 @@ export default function ModelInfo() {
         </div>
 
         {/* Response chain */}
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-5">
+        <div className="glass border border-white/[0.06] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <BrainCircuit className="w-4 h-4 text-cyan-400" />
+            <BrainCircuit className="w-4 h-4 text-brand-400" />
             <span className="text-sm font-semibold text-slate-300">High Alert Response Chain</span>
           </div>
-          <ol className="relative border-l border-surface-600 ml-2 space-y-4">
+          <ol className="relative border-l border-white/[0.06] ml-2 space-y-4">
             {[
               { step: '1', color: '#ef4444', title: 'Kill Process', desc: 'Terminate the offending PID immediately via taskkill /F.' },
               { step: '2', color: '#f59e0b', title: 'Network Isolation', desc: 'Block remote IP/port via Windows Firewall netsh rule. Auto-expires after 1h.' },
@@ -168,14 +168,14 @@ export default function ModelInfo() {
       </div>
 
       {/* Feature vector breakdown */}
-      <div className="bg-surface-900 border border-surface-700 rounded-xl p-5">
+      <div className="glass border border-white/[0.06] rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Layers className="w-4 h-4 text-cyan-400" />
+          <Layers className="w-4 h-4 text-brand-400" />
           <span className="text-sm font-semibold text-slate-300">Feature Vector Layout ({featCount} dims)</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {FEATURE_GROUPS.map(g => (
-            <div key={g.name} className="rounded-lg border bg-surface-800/50 overflow-hidden"
+            <div key={g.name} className="rounded-lg border bg-navy-800/40 overflow-hidden"
               style={{ borderColor: `${g.color}33` }}>
               <div className="px-3 py-2 flex items-center justify-between"
                 style={{ background: `${g.color}15`, borderBottom: `1px solid ${g.color}33` }}>
@@ -196,9 +196,9 @@ export default function ModelInfo() {
       </div>
 
       {/* Hyperparameters */}
-      <div className="bg-surface-900 border border-surface-700 rounded-xl p-5">
+      <div className="glass border border-white/[0.06] rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <BarChart2 className="w-4 h-4 text-cyan-400" />
+          <BarChart2 className="w-4 h-4 text-brand-400" />
           <span className="text-sm font-semibold text-slate-300 capitalize">
             {algo.replace('_', ' ')} Hyperparameters
           </span>

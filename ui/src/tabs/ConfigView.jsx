@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { usePolling }  from '../hooks/usePolling'
 import { getConfig }   from '../api/client'
 import { Settings, ChevronRight, ChevronDown, Copy, Check } from 'lucide-react'
@@ -18,13 +18,13 @@ function ConfigNode({ label, value, depth = 0 }) {
           className="flex items-center gap-1 text-xs font-semibold text-slate-300 hover:text-white py-0.5 group w-full text-left"
         >
           {open
-            ? <ChevronDown className="w-3 h-3 text-cyan-500" />
-            : <ChevronRight className="w-3 h-3 text-cyan-500" />}
-          <span className="text-cyan-400">{label}</span>
+            ? <ChevronDown className="w-3 h-3 text-brand-500" />
+            : <ChevronRight className="w-3 h-3 text-brand-500" />}
+          <span className="text-brand-400">{label}</span>
           <span className="text-slate-600 ml-1">{`{${Object.keys(value).length}}`}</span>
         </button>
         {open && (
-          <div className="border-l border-surface-600 ml-2 pl-3 mt-0.5 space-y-0.5">
+          <div className="border-l border-white/[0.06] ml-2 pl-3 mt-0.5 space-y-0.5">
             {Object.entries(value).map(([k, v]) => (
               <ConfigNode key={k} label={k} value={v} depth={depth + 1} />
             ))}
@@ -48,7 +48,7 @@ function ConfigNode({ label, value, depth = 0 }) {
           <span className="text-slate-500 ml-1">[{value.length}]</span>
         </button>
         {open && (
-          <div className="border-l border-surface-600 ml-2 pl-3 mt-0.5 space-y-0.5">
+          <div className="border-l border-white/[0.06] ml-2 pl-3 mt-0.5 space-y-0.5">
             {value.map((v, i) => (
               <ConfigNode key={i} label={String(i)} value={v} depth={depth + 1} />
             ))}
@@ -95,7 +95,7 @@ function CopyButton({ text }) {
   return (
     <button
       onClick={handleCopy}
-      className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors px-2.5 py-1.5 rounded-md hover:bg-surface-700"
+      className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors px-2.5 py-1.5 rounded-md hover:bg-navy-700"
     >
       {copied
         ? <><Check className="w-3.5 h-3.5 text-emerald-400" /> Copied</>
@@ -124,7 +124,7 @@ export default function ConfigView() {
   if (loading) {
     return (
       <div className="text-center py-20 text-slate-500">
-        <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         Loading configuration…
       </div>
     )
@@ -138,7 +138,7 @@ export default function ConfigView() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Settings className="w-5 h-5 text-cyan-400" />
+          <Settings className="w-5 h-5 text-brand-400" />
           <h2 className="text-lg font-bold text-white">config.yaml</h2>
           <span className="text-xs text-slate-500 font-mono">config/config.yaml</span>
         </div>
@@ -148,9 +148,9 @@ export default function ConfigView() {
       {/* Section cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {sections.map(([sectionKey, sectionVal]) => (
-          <div key={sectionKey} className="bg-surface-900 border border-surface-700 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-surface-700 bg-surface-800/60 flex items-center gap-2">
-              <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
+          <div key={sectionKey} className="glass border border-white/[0.06] rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-white/[0.06] bg-navy-800/50 flex items-center gap-2">
+              <span className="text-xs font-semibold text-brand-400 uppercase tracking-wider">
                 {SECTION_LABELS[sectionKey] ?? sectionKey}
               </span>
             </div>
@@ -167,7 +167,7 @@ export default function ConfigView() {
       </div>
 
       {/* Raw JSON view */}
-      <details className="bg-surface-900 border border-surface-700 rounded-xl overflow-hidden">
+      <details className="glass border border-white/[0.06] rounded-xl overflow-hidden">
         <summary className="px-4 py-3 text-sm font-semibold text-slate-400 hover:text-white cursor-pointer select-none">
           Raw JSON (API response)
         </summary>

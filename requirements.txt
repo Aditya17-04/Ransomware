@@ -22,6 +22,7 @@ pyshark>=0.6              # Optional: Wireshark/tshark-based capture
 # ── UI/API bridge ─────────────────────────────────────────────────────────────
 flask>=3.0.0              # REST API bridge for the React dashboard
 flask-cors>=4.0.0         # CORS support for Flask
+supabase>=2.3.0           # Supabase Python client (alert persistence)
 
 # ── Configuration / Serialisation ────────────────────────────────────────────
 pyyaml>=6.0.1

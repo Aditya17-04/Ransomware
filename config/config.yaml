@@ -82,7 +82,7 @@ features:
 # AI Detection Model
 # ─────────────────────────────────────────────────────────────────────────────
 model:
-  algorithm: "lightgbm"       # lightgbm | random_forest
+  algorithm: "random_forest"  # lightgbm | random_forest
   classes:
     - "Benign"
     - "Suspicious"

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+﻿import { useState, useMemo } from 'react'
 import { usePolling } from '../hooks/usePolling'
 import { getAlerts }  from '../api/client'
 import AlertBadge from '../components/AlertBadge'
@@ -53,7 +53,7 @@ export default function Alerts() {
 
       {/* Summary row */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4 flex items-center gap-3">
+        <div className="glass border border-white/[0.06] rounded-xl p-4 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-slate-500/10">
             <Filter className="w-5 h-5 text-slate-400" />
           </div>
@@ -62,7 +62,7 @@ export default function Alerts() {
             <p className="text-2xl font-bold text-white">{all.length}</p>
           </div>
         </div>
-        <div className="bg-surface-900 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
+        <div className="glass border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-red-500/10">
             <AlertTriangle className="w-5 h-5 text-red-400" />
           </div>
@@ -71,7 +71,7 @@ export default function Alerts() {
             <p className="text-2xl font-bold text-red-400">{haStats}</p>
           </div>
         </div>
-        <div className="bg-surface-900 border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
+        <div className="glass border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-amber-500/10">
             <Shield className="w-5 h-5 text-amber-400" />
           </div>
@@ -83,21 +83,21 @@ export default function Alerts() {
       </div>
 
       {/* Table card */}
-      <div className="bg-surface-900 border border-surface-700 rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-surface-700">
+      <div className="glass border border-white/[0.06] rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-400" />
             <span className="text-sm font-semibold text-slate-300">Alert Log</span>
           </div>
           {/* Filter buttons */}
-          <div className="flex gap-1 bg-surface-800 rounded-lg p-1">
+          <div className="flex gap-1 bg-navy-800 rounded-lg p-1">
             {FILTER_OPTS.map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1 rounded-md text-xs font-medium transition-all
                   ${filter === f
-                    ? 'bg-cyan-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'text-slate-400 hover:text-white'}`}
               >
                 {f}
@@ -108,7 +108,7 @@ export default function Alerts() {
 
         {loading ? (
           <div className="p-10 text-center text-slate-500">
-            <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             Loading alerts…
           </div>
         ) : filtered.length === 0 ? (
@@ -120,7 +120,7 @@ export default function Alerts() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px]">
               <thead>
-                <tr className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 bg-surface-800/50">
+                <tr className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 bg-navy-800/40">
                   <th className="py-2.5 px-4 text-left">#</th>
                   <th className="py-2.5 px-4 text-left">Timestamp</th>
                   <th className="py-2.5 px-4 text-left">Level</th>
@@ -134,7 +134,7 @@ export default function Alerts() {
                 {filtered.map((a, idx) => (
                   <tr
                     key={a.id}
-                    className={`border-b border-surface-700 hover:bg-surface-800/40 transition-colors
+                    className={`border-b border-white/[0.06] hover:bg-navy-800/40 transition-colors
                       ${a.level === 'HighAlert' ? 'bg-red-950/10' : ''}`}
                   >
                     <td className="py-2.5 px-4 text-xs text-slate-500 font-mono">{a.id}</td>
@@ -142,7 +142,7 @@ export default function Alerts() {
                     <td className="py-2.5 px-4"><AlertBadge level={a.level} /></td>
                     <td className="py-2.5 px-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 bg-surface-700 rounded-full overflow-hidden">
+                        <div className="w-16 h-1.5 bg-navy-700 rounded-full overflow-hidden">
                           <div
                             className="h-full rounded-full"
                             style={{

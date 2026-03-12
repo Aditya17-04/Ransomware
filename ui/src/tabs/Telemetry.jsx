@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { usePolling } from '../hooks/usePolling'
 import { getTelemetry } from '../api/client'
 import LiveChart from '../components/LiveChart'
@@ -29,10 +29,10 @@ function HPCPanel({ hpc }) {
           { title: 'Ctx Switches',  value: `${(latest.context_switches_per_sec ?? 0).toLocaleString()}/s`, accent: 'slate' },
           { title: 'Syscalls',      value: `${(latest.syscalls_per_sec ?? 0).toLocaleString()}/s`,         accent: 'slate' },
         ].map(c => (
-          <div key={c.title} className="bg-surface-800 rounded-xl border border-surface-700 p-3">
+          <div key={c.title} className="glass-light rounded-xl border border-white/[0.06] p-3">
             <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">{c.title}</p>
             <p className={`text-lg font-bold ${
-              c.accent === 'cyan'   ? 'text-cyan-400'   :
+              c.accent === 'cyan'   ? 'text-brand-400'   :
               c.accent === 'violet' ? 'text-violet-400' :
               c.accent === 'amber'  ? 'text-amber-400'  :
               'text-slate-300'
@@ -43,7 +43,7 @@ function HPCPanel({ hpc }) {
 
       {/* Charts row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="CPU Utilisation (%)"
             data={hpc}
@@ -54,7 +54,7 @@ function HPCPanel({ hpc }) {
             xKey="ts" height={190} unit="%" yDomain={[0, 100]}
           />
         </div>
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="Memory Pressure"
             data={hpc}
@@ -69,7 +69,7 @@ function HPCPanel({ hpc }) {
 
       {/* Charts row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="Context Switches / sec"
             data={hpc}
@@ -77,7 +77,7 @@ function HPCPanel({ hpc }) {
             xKey="ts" height={170}
           />
         </div>
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="System Calls / sec"
             data={hpc}
@@ -87,11 +87,11 @@ function HPCPanel({ hpc }) {
         </div>
       </div>
 
-      <div className="bg-surface-800/50 rounded-xl border border-surface-700 p-4 text-xs text-slate-400 leading-relaxed">
+      <div className="bg-navy-800/40 rounded-xl border border-white/[0.06] p-4 text-xs text-slate-400 leading-relaxed">
         <p className="font-semibold text-slate-300 mb-1">Crypto-jacking / Side-channel Indicators</p>
         <p>• Sustained <span className="text-violet-400">high privileged-time</span> → kernel-level encryption routines running.</p>
         <p>• Spike in <span className="text-amber-400">cache faults</span> → unusual memory-access pattern typical of crypto miners.</p>
-        <p>• Elevated <span className="text-cyan-400">syscall rate + high CPU</span> → mass file-encryption syscalls (ransomware signature).</p>
+        <p>• Elevated <span className="text-brand-400">syscall rate + high CPU</span> → mass file-encryption syscalls (ransomware signature).</p>
       </div>
     </div>
   )
@@ -111,10 +111,10 @@ function FilePanel({ file }) {
           { title: 'Renames',            value: latest.renames?.toFixed(0) ?? 0,           accent: 'violet'  },
           { title: 'Deletions',          value: latest.deletes?.toFixed(0) ?? 0,           accent: 'red'     },
         ].map(c => (
-          <div key={c.title} className="bg-surface-800 rounded-xl border border-surface-700 p-3">
+          <div key={c.title} className="glass-light rounded-xl border border-white/[0.06] p-3">
             <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">{c.title}</p>
             <p className={`text-2xl font-bold ${
-              c.accent === 'cyan'   ? 'text-cyan-400'   :
+              c.accent === 'cyan'   ? 'text-brand-400'   :
               c.accent === 'amber'  ? 'text-amber-400'  :
               c.accent === 'violet' ? 'text-violet-400' :
               'text-red-400'
@@ -124,7 +124,7 @@ function FilePanel({ file }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="File Events / Window"
             data={file}
@@ -133,7 +133,7 @@ function FilePanel({ file }) {
           />
           <p className="text-[10px] text-slate-500 mt-1">Threshold: ≥ 20 events/window → Suspicious</p>
         </div>
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="Shannon Entropy (0–8)"
             data={file}
@@ -145,7 +145,7 @@ function FilePanel({ file }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="File Renames / Window"
             data={file}
@@ -153,7 +153,7 @@ function FilePanel({ file }) {
             xKey="ts" height={160}
           />
         </div>
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="File Deletions / Window"
             data={file}
@@ -164,7 +164,7 @@ function FilePanel({ file }) {
         </div>
       </div>
 
-      <div className="bg-surface-800/50 rounded-xl border border-surface-700 p-4 text-xs text-slate-400 leading-relaxed">
+      <div className="bg-navy-800/40 rounded-xl border border-white/[0.06] p-4 text-xs text-slate-400 leading-relaxed">
         <p className="font-semibold text-slate-300 mb-1">Ransomware File Indicators</p>
         <p>• <span className="text-amber-400">High entropy</span> (≥ 7.2 bits) after writes → ciphertext replacing plaintext files.</p>
         <p>• <span className="text-violet-400">Mass renames</span> to .enc / .locked / .crypto → known ransomware staging.</p>
@@ -182,14 +182,14 @@ function NetworkPanel({ net }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-surface-800 rounded-xl border border-surface-700 p-4">
+        <div className="glass-light rounded-xl border border-white/[0.06] p-4">
           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Bytes Out / Window</p>
-          <p className={`text-2xl font-bold ${parseFloat(mbOut) >= 5 ? 'text-red-400' : 'text-cyan-400'}`}>
+          <p className={`text-2xl font-bold ${parseFloat(mbOut) >= 5 ? 'text-red-400' : 'text-brand-400'}`}>
             {mbOut} <span className="text-sm font-normal text-slate-400">MB</span>
           </p>
           <p className="text-[10px] text-slate-500 mt-0.5">Exfil threshold: ≥ 5 MB / window</p>
         </div>
-        <div className="bg-surface-800 rounded-xl border border-surface-700 p-4">
+        <div className="glass-light rounded-xl border border-white/[0.06] p-4">
           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Active Connections</p>
           <p className={`text-2xl font-bold ${(latest.connections ?? 0) >= 30 ? 'text-amber-400' : 'text-emerald-400'}`}>
             {latest.connections?.toFixed(0) ?? 0}
@@ -199,7 +199,7 @@ function NetworkPanel({ net }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="Outbound Bytes / Window"
             data={net.map(p => ({ ...p, mb_out: parseFloat((p.bytes_out / 1_000_000).toFixed(3)) }))}
@@ -211,7 +211,7 @@ function NetworkPanel({ net }) {
             <span className="text-[10px] text-slate-500">Exfiltration threshold: 5 MB</span>
           </div>
         </div>
-        <div className="bg-surface-900 border border-surface-700 rounded-xl p-4">
+        <div className="glass border border-white/[0.06] rounded-xl p-4">
           <LiveChart
             title="Active Connections"
             data={net}
@@ -221,9 +221,9 @@ function NetworkPanel({ net }) {
         </div>
       </div>
 
-      <div className="bg-surface-800/50 rounded-xl border border-surface-700 p-4 text-xs text-slate-400 leading-relaxed">
+      <div className="bg-navy-800/40 rounded-xl border border-white/[0.06] p-4 text-xs text-slate-400 leading-relaxed">
         <p className="font-semibold text-slate-300 mb-1">C2 Beacon / Exfiltration Indicators</p>
-        <p>• <span className="text-cyan-400">Periodic outbound connections</span> at fixed 30–300 s cadence → C2 heartbeat beaconing.</p>
+        <p>• <span className="text-brand-400">Periodic outbound connections</span> at fixed 30–300 s cadence → C2 heartbeat beaconing.</p>
         <p>• <span className="text-red-400">Outbound bytes ≥ 5 MB/window</span> → potential data exfiltration to remote host.</p>
         <p>• Connections to blacklisted ports <span className="text-amber-400">4444, 1337, 31337, 8080</span> → known malware ports.</p>
       </div>
@@ -243,15 +243,15 @@ export default function Telemetry() {
   return (
     <div className="space-y-5">
       {/* Sub-tab bar */}
-      <div className="flex gap-2 bg-surface-900 border border-surface-700 rounded-xl p-1.5 w-fit">
+      <div className="flex gap-2 glass border border-white/[0.06] rounded-xl p-1.5 w-fit">
         {SUB_TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setSub(id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
               ${sub === id
-                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-900/40'
-                : 'text-slate-400 hover:text-white hover:bg-surface-800'
+                ? 'bg-brand-600 text-white shadow-md shadow-brand-900/40'
+                : 'text-slate-400 hover:text-white hover:bg-navy-800'
               }`}
           >
             <Icon className="w-4 h-4" />
@@ -262,7 +262,7 @@ export default function Telemetry() {
 
       {loading && (
         <div className="text-slate-500 text-sm text-center py-12">
-          <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           Connecting to telemetry stream…
         </div>
       )}

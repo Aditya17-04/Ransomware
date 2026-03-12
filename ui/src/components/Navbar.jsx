@@ -1,9 +1,9 @@
 import { usePolling } from '../hooks/usePolling'
 import { getStatus }  from '../api/client'
 import {
-  Shield, LayoutDashboard, Activity,
+  ShieldCheck, LayoutDashboard, Activity,
   AlertTriangle, BrainCircuit, Settings,
-  Wifi, WifiOff,
+  Wifi, WifiOff, Radio, LogOut,
 } from 'lucide-react'
 
 const ICONS = {
@@ -14,37 +14,46 @@ const ICONS = {
   config:    Settings,
 }
 
-function LevelBadge({ label }) {
+function ThreatPill({ label }) {
   const map = {
-    Benign:     'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-    Suspicious: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-    Malicious:  'bg-red-500/15 text-red-400 border-red-500/30',
-    Unknown:    'bg-slate-500/15 text-slate-400 border-slate-500/30',
+    Benign:     'badge-low',
+    Suspicious: 'badge-medium',
+    Malicious:  'badge-high',
+    Unknown:    'bg-navy-700 text-slate-400 border border-navy-600',
   }
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${map[label] ?? map.Unknown}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wide ${map[label] ?? map.Unknown}`}>
       {label}
     </span>
   )
 }
 
-export default function Navbar({ activeTab, tabs, onTabChange }) {
+export default function Navbar({ activeTab, tabs, onTabChange, user, onSignOut }) {
   const { data, error } = usePolling(getStatus, 4000)
   const connected = !error && data?.running
 
   return (
-    <nav className="bg-surface-900 border-b border-surface-700 sticky top-0 z-50 shadow-lg">
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center h-14 gap-4">
+    <nav className="sticky top-0 z-50 border-b border-white/[0.06]"
+         style={{ background: 'rgba(4,11,24,0.92)', backdropFilter: 'blur(16px)' }}>
+      <div className="max-w-screen-2xl mx-auto px-6">
+        <div className="flex items-center h-16 gap-6">
 
           {/* Brand */}
-          <div className="flex items-center gap-2 shrink-0 mr-2">
-            <Shield className="text-cyan-400 w-6 h-6" strokeWidth={2} />
-            <span className="font-bold text-white text-base tracking-wider">AI-RIDS</span>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-brand-gradient flex items-center justify-center shadow-glow-sm">
+              <ShieldCheck className="w-4.5 h-4.5 text-white" strokeWidth={2} />
+            </div>
+            <div>
+              <span className="font-bold text-white text-sm tracking-widest">AI-RIDS</span>
+              <span className="hidden sm:block text-[10px] text-slate-500 tracking-wider -mt-0.5">INTRUSION DETECTION</span>
+            </div>
           </div>
 
+          {/* Divider */}
+          <div className="w-px h-8 bg-white/[0.06] shrink-0" />
+
           {/* Tab buttons */}
-          <div className="flex gap-1 overflow-x-auto no-scrollbar">
+          <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {tabs.map(tab => {
               const Icon = ICONS[tab.id]
               const active = activeTab === tab.id
@@ -52,10 +61,10 @@ export default function Navbar({ activeTab, tabs, onTabChange }) {
                 <button
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200
                     ${active
-                      ? 'bg-cyan-600 text-white shadow-md shadow-cyan-900/40'
-                      : 'text-slate-400 hover:text-white hover:bg-surface-800'
+                      ? 'nav-active text-white'
+                      : 'text-slate-400 hover:text-white hover:bg-navy-700/60'
                     }`}
                 >
                   {Icon && <Icon className="w-3.5 h-3.5" />}
@@ -65,18 +74,39 @@ export default function Navbar({ activeTab, tabs, onTabChange }) {
             })}
           </div>
 
-          {/* Right: live status */}
-          <div className="ml-auto flex items-center gap-3 shrink-0">
-            {data && (
-              <LevelBadge label={data.current_label} />
+          {/* Right side */}
+          <div className="ml-auto flex items-center gap-4 shrink-0">
+            {data && <ThreatPill label={data.current_label} />}
+            {user && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                     style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                       style={{ background: 'linear-gradient(135deg,#4f46e5,#3b82f6)' }}>
+                    {(user.name?.[0] ?? user.email?.[0] ?? 'U').toUpperCase()}
+                  </div>
+                  <span className="text-xs text-slate-300 hidden xl:block max-w-[120px] truncate">
+                    {user.name || user.email}
+                  </span>
+                </div>
+                <button
+                  onClick={onSignOut}
+                  title="Sign out"
+                  className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             )}
-            <div className="flex items-center gap-1.5">
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all
+              ${connected
+                ? 'border-risk-low/30 text-risk-low bg-risk-low/10'
+                : 'border-risk-high/30 text-risk-high bg-risk-high/10'
+              }`}>
               {connected
-                ? <Wifi className="w-4 h-4 text-emerald-400" />
-                : <WifiOff className="w-4 h-4 text-red-400" />}
-              <span className={`text-xs font-medium ${connected ? 'text-emerald-400' : 'text-red-400'}`}>
-                {connected ? 'LIVE' : 'OFFLINE'}
-              </span>
+                ? <Radio className="w-3 h-3 animate-pulse-fast" />
+                : <WifiOff className="w-3 h-3" />}
+              {connected ? 'LIVE' : 'OFFLINE'}
             </div>
           </div>
 

@@ -32,8 +32,25 @@ import time
 from collections import deque
 
 import yaml
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+# ─── Supabase (optional) ──────────────────────────────────────────────────────
+# Set SUPABASE_URL and SUPABASE_KEY in a .env file or environment variables.
+# Alerts will persist across restarts when configured; falls back to in-memory.
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+try:
+    from supabase import create_client as _sb_factory
+    _SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+    _SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
+    _sb = _sb_factory(_SUPABASE_URL, _SUPABASE_KEY) if (_SUPABASE_URL and _SUPABASE_KEY) else None
+except Exception:
+    _sb = None
 
 app = Flask(__name__)
 CORS(app)
@@ -50,6 +67,61 @@ alerts         : deque = deque(maxlen=200)
 _alert_id   = 0
 _start_time = time.time()
 _state_lock = threading.Lock()
+
+
+# ─── Supabase helpers ────────────────────────────────────────────────────────
+
+def _sb_insert(alert: dict) -> None:
+    """Persist one alert row to Supabase (called outside _state_lock)."""
+    if _sb is None:
+        return
+    try:
+        _sb.table("alerts").insert({
+            "ts":           alert["ts"],
+            "level":        alert["level"],
+            "label":        alert["label"],
+            "confidence":   alert["confidence"],
+            "pid":          alert.get("pid"),
+            "remote_ip":    alert.get("remote_ip"),
+            "remote_port":  alert.get("remote_port"),
+            "actions_taken": alert.get("actions_taken", []),
+        }).execute()
+    except Exception as exc:
+        print(f"[Supabase] insert failed: {exc}")
+
+
+def _sb_load_recent(limit: int = 200) -> None:
+    """On startup — back-fill the in-memory deque from Supabase."""
+    if _sb is None:
+        return
+    try:
+        resp = (
+            _sb.table("alerts")
+            .select("*")
+            .order("ts", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        rows = list(reversed(resp.data or []))   # oldest-first
+        global _alert_id
+        with _state_lock:
+            for row in rows:
+                entry = {
+                    "id":           row["id"],
+                    "ts":           row["ts"],
+                    "level":        row["level"],
+                    "label":        row["label"],
+                    "confidence":   row["confidence"],
+                    "pid":          row.get("pid"),
+                    "remote_ip":    row.get("remote_ip"),
+                    "remote_port":  row.get("remote_port"),
+                    "actions_taken": row.get("actions_taken", []),
+                }
+                alerts.appendleft(entry)
+                _alert_id = max(_alert_id, row["id"])
+        print(f"[Supabase] loaded {len(rows)} historical alerts.")
+    except Exception as exc:
+        print(f"[Supabase] startup load failed: {exc}")
 
 
 # ─── Simulation thread ────────────────────────────────────────────────────────
@@ -168,10 +240,11 @@ def _simulate() -> None:
                 },
             })
 
-            # Emit alerts
+            # Emit alerts — build dict inside lock, persist to DB outside
+            _new_alert = None
             if label == "Malicious" and conf >= 0.85 and random.random() < 0.35:
                 _alert_id += 1
-                alerts.appendleft({
+                _new_alert = {
                     "id":          _alert_id,
                     "ts":          ts,
                     "level":       "HighAlert",
@@ -181,10 +254,11 @@ def _simulate() -> None:
                     "remote_ip":   f"192.168.{random.randint(1,254)}.{random.randint(1,254)}",
                     "remote_port": random.choice([4444, 1337, 31337, 6666, 8080]),
                     "actions_taken": ["kill_process", "network_isolation", "file_protection"],
-                })
+                }
+                alerts.appendleft(_new_alert)
             elif label == "Suspicious" and conf >= 0.60 and random.random() < 0.25:
                 _alert_id += 1
-                alerts.appendleft({
+                _new_alert = {
                     "id":          _alert_id,
                     "ts":          ts,
                     "level":       "Suspicious",
@@ -194,7 +268,12 @@ def _simulate() -> None:
                     "remote_ip":   f"10.0.{random.randint(0,255)}.{random.randint(1,254)}",
                     "remote_port": random.choice([443, 8080, 9999, 3389]),
                     "actions_taken": ["logged"],
-                })
+                }
+                alerts.appendleft(_new_alert)
+
+        # Persist to Supabase OUTSIDE the state lock (network I/O)
+        if _new_alert:
+            _sb_insert(_new_alert)
 
         # Advance phase
         phase_tick += 1
@@ -207,6 +286,7 @@ def _simulate() -> None:
 
 _sim_thread = threading.Thread(target=_simulate, daemon=True, name="sim")
 _sim_thread.start()
+_sb_load_recent()   # back-fill from Supabase on startup
 
 
 # ─── Config helper ────────────────────────────────────────────────────────────
@@ -258,8 +338,36 @@ def api_threat():
 
 @app.route("/api/alerts")
 def api_alerts():
+    page  = max(1, int(request.args.get("page",  1)))
+    limit = min(200, max(1, int(request.args.get("limit", 50))))
     with _state_lock:
-        return jsonify({"alerts": list(alerts)})
+        all_alerts = list(alerts)
+    total  = len(all_alerts)
+    start  = (page - 1) * limit
+    return jsonify({
+        "alerts": all_alerts[start : start + limit],
+        "total":  total,
+        "page":   page,
+        "limit":  limit,
+        "pages":  max(1, math.ceil(total / limit)),
+    })
+
+
+@app.route("/api/alerts/clear", methods=["DELETE"])
+def api_alerts_clear():
+    """Clear all alerts from memory and Supabase."""
+    with _state_lock:
+        alerts.clear()
+    db_err = None
+    if _sb is not None:
+        try:
+            _sb.table("alerts").delete().neq("id", 0).execute()
+        except Exception as exc:
+            db_err = str(exc)
+    resp = {"cleared": True}
+    if db_err:
+        resp["db_error"] = db_err
+    return jsonify(resp)
 
 
 @app.route("/api/config")

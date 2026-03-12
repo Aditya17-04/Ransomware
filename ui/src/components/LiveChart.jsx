@@ -23,7 +23,7 @@ function defaultFmtX(ts) {
 function CustomTooltip({ active, payload, label, unit }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-surface-800 border border-surface-600 rounded-lg p-3 shadow-xl text-xs">
+    <div className="glass border border-brand-500/20 rounded-xl p-3 shadow-xl text-xs">
       <p className="text-slate-400 mb-1.5">{defaultFmtX(label)}</p>
       {payload.map(p => (
         <p key={p.dataKey} style={{ color: p.color }} className="font-medium">
@@ -50,17 +50,17 @@ export default function LiveChart({
       )}
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,102,241,0.08)" vertical={false} />
           <XAxis
             dataKey={xKey}
             tickFormatter={defaultFmtX}
-            tick={{ fill: '#475569', fontSize: 9 }}
+            tick={{ fill: '#3b5280', fontSize: 9 }}
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
           />
           <YAxis
-            tick={{ fill: '#475569', fontSize: 9 }}
+            tick={{ fill: '#3b5280', fontSize: 9 }}
             axisLine={false}
             tickLine={false}
             domain={yDomain}

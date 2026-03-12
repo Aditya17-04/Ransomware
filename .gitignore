@@ -1,0 +1,31 @@
+# Credentials — never commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+*.joblib
+
+# Models (large binary artefacts — track separately or via DVC)
+models/saved/
+
+# Data
+data/
+
+# Node / React
+ui/node_modules/
+ui/dist/
+
+# OS
+.DS_Store
+Thumbs.db
